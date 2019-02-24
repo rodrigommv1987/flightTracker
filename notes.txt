@@ -1,0 +1,17 @@
+https://desktopapps.ryanair.com/v4
+
+/Price
+precios de asientos de un aereo
+aparecen despues de clickear en un precio
+post request
+https://desktopapps.ryanair.com/v4/es-es/Price
+postPrice: t + "/" + r + "/Price",
+
+
+
+/Flight
+confirmacion de vuelo?
+
+/FareOptions
+devuelve los precios para asientos dentro de un vuelo, pero los numeros no coinciden con el front
+https://desktopapps.ryanair.com/v4/es-es/FareOptions?AdultsCount=1&ChildrenCount=0&InfantCount=0&TeensCount=0&outboundFareKey=0~A~+~FR~ALDISZP~ZZZP~~0~6~~X&outboundFlightKey=FR~4597~+~~BCN~03%2F23%2F2019+19:40~OPO~03%2F23%2F2019+20:40~~
