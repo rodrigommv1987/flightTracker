@@ -1,29 +1,57 @@
 class Flight {
-    constructor({ originAirport, destinationAirport, departureDate, arrivalDate, 
-        duration = null, adults = 1, children = 0, flightNumber = '', flightKey = '',
-        price = 0, hasDiscount = false, discountInPercent = 0, hasPromoDiscount = false}) {
+
+    constructor({ originAirport, destinationAirport, departureDate,
+        arrivalDate, hasAvailableSeat, duration = null, adults = 1,
+        children = 0, flightNumber = '', flightKey = '' }) {
 
         //basic info
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
         this.departureDate = departureDate;
         this.arrivalDate = arrivalDate;
+        this.duration = duration || this.calculateDuration(departureDate, arrivalDate);
         this.adults = adults;
         this.children = children;
-        this.duration = duration || this.calculateDuration(departureDate, arrivalDate);
 
         //misc info
         this.flightKey = flightKey;
         this.flightNumber = flightNumber;
+        this.hasAvailableSeat = hasAvailableSeat;
 
         //price related info
+        this.price = 0;
+        this.hasDiscount = false;
+        this.discountInPercent = 0;
+        this.hasPromoDiscount = false;
+
+        //all flight segments that composes the flight
+        this.segments = [];
+    }
+
+    setFlightPrice({ fareKey = '', fareClass = '', price = 0, hasDiscount = false,
+        discountInPercent = 0, hasPromoDiscount = false }) {
+
+        this.fareKey = fareKey;
+        this.fareClass = fareClass;
         this.price = price;
         this.hasDiscount = hasDiscount;
         this.discountInPercent = discountInPercent;
         this.hasPromoDiscount = hasPromoDiscount;
+        return this;
+    }
 
-        //all flight segments that composes the flight
-        this.segments = [];
+    addSegment(segments) {
+        this.segments.push(...segments.map(
+            segment => {
+                const { origin, destination, flightNumber, duration } = segment,
+                    [departureTime, arrivalTime] = segment.time;
+
+                return {
+                    origin, destination, flightNumber, duration, departureTime, arrivalTime
+                }
+
+            })
+        );
     }
 
     calculateDuration(departureDate, arrivalDate) {

@@ -15,14 +15,24 @@ class Trip {
         this.fetchedFromServer = false;
         this.airline = '';
         //here will be search results
-        this.flights = [{
-            outbound: [],
-            inbound: []
-        }]
-
+        this.flights = []
     }
 
-    availableFlights(availableFlights) {
+    addOneWayFlight(outBoundFlight) {
+        this.flights.push({
+            outbound: outBoundFlight,
+            inbound: null
+        })
+    }
+
+    addRoundTripFlight(outBoundFlight, inboundFlight) {
+        this.flights.push({
+            outbound: outBoundFlight,
+            inbound: inboundFlight
+        })
+    }
+
+    setAvailableFlights(availableFlights) {
         this.availableFlights = availableFlights
     }
 

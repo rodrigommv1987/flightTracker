@@ -7,38 +7,41 @@ class RyanairTripAdapter {
             availableFlights = tripData.dates[0].flights.length > 0;
 
         if (availableFlights) {
-            const flights = tripData.dates[0].flights.map(flightData => {
+            for (const flightData of tripData.dates[0].flights) {
+                const { flightKey, regularFare = null, segments, flightNumber, time, duration } = flightData,
+                    { iataCode: originAirport } = trip.originAirport,
+                    { iataCode: destinationAirport } = trip.destinationAirport,
+                    hasAvailableSeat = (regularFare !== null);
 
-                const { flightKey, regularFare, segments, flightNumber, time, duration } = flightData,
-                    { originAirport } = trip.originAirport,
-                    { destinationAirport } = trip.destinationAirport;
-
-                const flight = new Flight({
+                let flight = new Flight({
+                    //basic info
                     originAirport,
                     destinationAirport,
                     departureDate: time[0],
                     arrivalDate: time[1],
                     duration,
+                    //misc info
+                    flightKey,
+                    flightNumber,
+                    hasAvailableSeat
                 });
 
-                // //misc info
-                // this.flightKey = '';
-                // this.flightNumber = '';
+                if (hasAvailableSeat) {
+                    const { fareKey, fareClass } = regularFare,
+                        { amount: price, hasDiscount, discountInPercent, hasPromoDiscount } = regularFare.fares[0];
 
-                // //price related info
-                // this.price = 0;
-                // this.hasDiscount = false;
-                // this.discountInPercent = 0;
-                // this.hasPromoDiscount = 
+                    flight.setFlightPrice({
+                        fareKey, fareClass, price, hasDiscount, discountInPercent, hasPromoDiscount
+                    });
+                }
 
-                // //all flight segments that composes the flight
-                // this.segments = [];
-                // console.log(f);
-            })
+                flight.addSegment(segments);
+                trip.addOneWayFlight(flight);
+            }
         }
 
-        trip.availableFlights(availableFlights);
-        // console.log(trip);
+        trip.setAvailableFlights(availableFlights);
+
         return trip;
     }
 

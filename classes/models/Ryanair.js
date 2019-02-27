@@ -112,23 +112,6 @@ class Ryanair {
         const { originAirport, destinationAirport, departureDate, adults = 1, children = 0 } = trip,
             { locale } = this.configs;
 
-            // console.log([
-            //     `https://desktopapps.ryanair.com/v4/${locale}/availability?`,
-            //     `Origin=${originAirport.iataCode}&`,
-            //     `Destination=${destinationAirport.iataCode}&`,
-            //     `DateOut=${departureDate}&`,
-            //     `INF=0&`,
-            //     `CHD=${children}&`,
-            //     `TEEN=0&`,
-            //     `ADT=${adults}&`,
-            //     `FlexDaysIn=1&`,
-            //     `FlexDaysOut=1&`,
-            //     `IncludeConnectingFlights=true&`,
-            //     `RoundTrip=false&`,
-            //     `ToUs=AGREED&`,
-            //     `exists=false`
-            // ].join(''));
-
         return new Promise((resolve, reject) => {
             r.request({
                 method: 'GET',
@@ -157,7 +140,8 @@ class Ryanair {
                     }
 
                     trip.dateFormat = this.configs.doTrip.dateFormat;
-
+                    trip.fetchedFromServer = true;
+                    trip.airline = this.name;
                     resolve(
                         RyanairTripAdapter.doSingleTrip(trip, body)
                     );
@@ -166,8 +150,48 @@ class Ryanair {
         });
     }
 
-    doRoundTrip({ originAirport, destinationAirport, departureDate }) {
+    doRoundTrip({ originAirport, destinationAirport, departureDate, arrivalDate }) {
+        const { originAirport, destinationAirport, departureDate, adults = 1, children = 0 } = trip,
+            { locale } = this.configs;
 
+        return new Promise((resolve, reject) => {
+            r.request({
+                method: 'GET',
+                json: true,
+                url: [
+                    `https://desktopapps.ryanair.com/v4/${locale}/availability?`,
+                    `Origin=${originAirport.iataCode}&`,
+                    `Destination=${destinationAirport.iataCode}&`,
+                    `DateOut=${departureDate}&`,
+                    `DateIn=${arrivalDate}&`,
+                    `INF=0&`,
+                    `CHD=${children}&`,
+                    `TEEN=0&`,
+                    `ADT=${adults}&`,
+                    `FlexDaysOut=0&`,
+                    `FlexDaysIn=0&`
+                    `IncludeConnectingFlights=true&`,
+                    `RoundTrip=true&`,
+                    `ToUs=AGREED&`,
+                    `exists=false`
+                ].join('')
+            },
+                (error, response, body) => {
+                    if (error) {
+                        console.log(`Error found in ${cf()}`);
+                        console.log(error);
+                        return
+                    }
+
+                    trip.dateFormat = this.configs.doTrip.dateFormat;
+                    trip.fetchedFromServer = true;
+                    trip.airline = this.name;
+                    resolve(
+                        RyanairTripAdapter.doSingleTrip(trip, body)
+                    );
+                }
+            )
+        });
     }
 
     fetchTrip({ }) { }
