@@ -1,6 +1,6 @@
 class TripPlanner {
 
-    static getFridayToSundayTrips(originAirport, destinationAirport, departureDate, arrivalDate) {
+    static getFridayToSundayTrips(originAirport, destinationAirport, departureDate, returnDate) {
 
     }
 

@@ -42,15 +42,9 @@ class Flight {
 
     addSegment(segments) {
         this.segments.push(...segments.map(
-            segment => {
-                const { origin, destination, flightNumber, duration } = segment,
-                    [departureTime, arrivalTime] = segment.time;
-
-                return {
-                    origin, destination, flightNumber, duration, departureTime, arrivalTime
-                }
-
-            })
+            ({ origin, destination, flightNumber, duration, time: [departureTime, arrivalTime] }) => ({
+                origin, destination, flightNumber, duration, departureTime, arrivalTime
+            }))
         );
     }
 

@@ -6,15 +6,17 @@ const moment = require('moment')
 const r = new Ryanair();
 let t = new Trip();
 
-let a = {
-	name: 'Rodrigo',
-	surname: 'Martinez'
-};
 
+// let a = {
+// 	name: 'Rodrigo',
+// 	surname: 'Martinez',
+// };
+
+// return;
 const origin = 'BCN';
 const destination = 'OPO';
 const departure = '2019-03-18';
-
+const returnDate = '2019-03-21';
 // const destination = 'ATH';
 // const departure = '2019-03-12';
 
@@ -30,12 +32,13 @@ r.fetchAvailableAirports()
 	})
 	.then(destinations => destinations.find(airport => airport.iataCode == destination))
 	.then(destinationAirport => {
-		// t.departureDate = moment().add(1, 'day').format(r.configs.doTrip.dateFormat);
-		t.departureDate = moment(departure).format(r.configs.doTrip.dateFormat);
+		t.departureDate = moment(departure).format(r.configs.doSingleTrip.dateFormat);
 		t.destinationAirport = destinationAirport;
+		t.returnDate = moment(returnDate).format(r.configs.doRoundTrip.dateFormat);
+
 		// return r.fetchAvailableDates(t.originAirport, t.destinationAirport)
-		return r.doSingleTrip(t)
-		// return r.doRoundTrip(t)
+		// return r.doSingleTrip(t)
+		return r.doRoundTrip(t)
 	})
 	.then(trip => {
 
@@ -46,6 +49,3 @@ r.fetchAvailableAirports()
 		// });
 		console.log("fin");
 	})
-	// .then(trip => {
-	// 	console.log("fin")
-	// });
