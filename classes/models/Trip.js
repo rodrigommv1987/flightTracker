@@ -12,14 +12,8 @@ class Trip {
         this.roundTrip = false;
 
         //here will be search results
-        this.flights = []
+        this.flights = [];
     }
-
-    /*
-        ToDo:
-        implement search logic for best (cheapest) flight as a getter
-    */
-    get bestFlight() { }
 
     addOneWayFlight({ outbound: { availableOutboundFlight, flights }, airline, timestamp, dateFormat }) {
 
@@ -38,8 +32,8 @@ class Trip {
         return this;
     }
 
-    addRoundTripFlight({ outbound: { availableOutboundFlight, flights:outboundFlights },
-        inbound: { availableInboundFlight, flights:inboundFlights }, airline, timestamp, dateFormat }) {
+    addRoundTripFlight({ outbound: { availableOutboundFlight, flights: outboundFlights },
+        inbound: { availableInboundFlight, flights: inboundFlights }, airline, timestamp, dateFormat }) {
 
         this.roundTrip = true;
         this.flights.push({
@@ -52,10 +46,13 @@ class Trip {
             dateFormat,
             outboundFlights: outboundFlights,
             inboundFlights: inboundFlights
-        })
+        });
 
         return this;
     }
-};
+}
 
 module.exports = Trip;
+
+//TODO: implement search logic for best (cheapest) flight as a getter
+// get bestFlight() { }

@@ -6,6 +6,6 @@ class Destination {
         this.direct = direct;
     }
 
-};
+}
 
 module.exports = Destination;

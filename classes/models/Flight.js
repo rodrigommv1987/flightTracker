@@ -18,12 +18,6 @@ class Flight {
         this.flightNumber = flightNumber;
         this.hasAvailableSeat = hasAvailableSeat;
 
-        //price related info
-        this.price = 0;
-        this.hasDiscount = false;
-        this.discountInPercent = 0;
-        this.hasPromoDiscount = false;
-
         //all flight segments that composes the flight
         this.segments = [];
     }
@@ -31,12 +25,9 @@ class Flight {
     setFlightPrice({ fareKey = '', fareClass = '', price = 0, hasDiscount = false,
         discountInPercent = 0, hasPromoDiscount = false }) {
 
-        this.fareKey = fareKey;
-        this.fareClass = fareClass;
-        this.price = price;
-        this.hasDiscount = hasDiscount;
-        this.discountInPercent = discountInPercent;
-        this.hasPromoDiscount = hasPromoDiscount;
+        this.priceInfo = {
+            fareKey, fareClass, price, hasDiscount, discountInPercent, hasPromoDiscount
+        };
         return this;
     }
 
@@ -46,10 +37,11 @@ class Flight {
                 origin, destination, flightNumber, duration, departureTime, arrivalTime
             }))
         );
+        this.directFlight = this.segments.length === 1;
     }
 
     calculateDuration(departureDate, arrivalDate) {
-        //ToDo 
+        //TODO: 
     }
 }
 

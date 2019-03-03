@@ -1,6 +1,6 @@
-const Flight = require('./Flight');
-const Airport = require('./Airport')
-const r = require('../utils/Request');
+const Flight = require('../Flight');
+const Airport = require('../Airport');
+const r = require('../../utils/Request');
 
 class Ryanair {
 
@@ -19,7 +19,7 @@ class Ryanair {
 
         this.url = {
             doTrip: ''
-        }
+        };
     }
 
     fetchAvailableAirports() {
@@ -37,9 +37,10 @@ class Ryanair {
             },
                 (error, response, { airports }) => {
                     if (error) {
-                        console.log(`Error found in fetchAvailableAirports`);
-                        console.log(error);
-                        return
+                        // console.log(`Error found in fetchAvailableAirports`);
+                        // console.log(error);
+                        // throw(error);
+                        return;
                     }
 
                     resolve(airports.map(
@@ -49,10 +50,11 @@ class Ryanair {
                     ));
                 }
             );
-        })
+        });
     }
 
     fetchDestinations({ cityCode }) {
+
         const { locale } = this.configs;
 
         return new Promise((resolve, reject) => {
@@ -67,9 +69,9 @@ class Ryanair {
             },
                 (error, response, { airports }) => {
                     if (error) {
-                        console.log(`Error found in fetchDestinations`);
-                        console.log(error);
-                        return
+                        // console.log(`Error found in fetchDestinations`);
+                        // console.log(error);
+                        return;
                     }
 
                     resolve(airports
@@ -82,7 +84,7 @@ class Ryanair {
                     );
                 }
             );
-        })
+        });
     }
 
     fetchAvailableDates({ iataCode: originIataCode }, { iataCode: destinationIataCode }) {
@@ -95,18 +97,19 @@ class Ryanair {
             },
                 (error, response, body) => {
                     if (error) {
-                        console.log(`Error found in fetchAvailableDates`);
-                        console.log(error);
-                        return
+                        // console.log(`Error found in fetchAvailableDates`);
+                        // console.log(error);
+                        return;
                     }
 
                     resolve(body.map(date => new Date(date)));
                 }
-            )
+            );
         });
     }
 
     doSingleTrip(trip) {
+
         const { originAirport, destinationAirport, departureDate, adults = 1, children = 0 } = trip,
             { locale, doSingleTrip: { dateFormat } } = this.configs;
 
@@ -132,9 +135,9 @@ class Ryanair {
             },
                 (error, response, body) => {
                     if (error) {
-                        console.log(`Error found in doSingleTrip`);
-                        console.log(error);
-                        return
+                        // console.log(`Error found in doSingleTrip`);
+                        // console.log(error);
+                        return;
                     }
 
                     resolve(trip.addOneWayFlight({
@@ -144,11 +147,12 @@ class Ryanair {
                         dateFormat
                     }));
                 }
-            )
+            );
         });
     }
 
     parseSingleTripResponse(trip, serverResponse) {
+
         const [outboundFlight] = serverResponse.trips,
             availableOutboundFlight = outboundFlight.dates[0].flights.length > 0;
         let outboundFlights = [];
@@ -170,6 +174,7 @@ class Ryanair {
     }
 
     doRoundTrip(trip) {
+
         const { originAirport, destinationAirport, departureDate, returnDate, adults = 1, children = 0 } = trip,
             { locale, doRoundTrip: { dateFormat } } = this.configs;
 
@@ -197,9 +202,9 @@ class Ryanair {
             },
                 (error, response, body) => {
                     if (error) {
-                        console.log(`Error found in doRoundTrip`);
-                        console.log(error);
-                        return
+                        // console.log(`Error found in doRoundTrip`);
+                        // console.log(error);
+                        return;
                     }
 
                     resolve(trip.addRoundTripFlight({
@@ -209,11 +214,12 @@ class Ryanair {
                         dateFormat
                     }));
                 }
-            )
+            );
         });
     }
 
     parseRoundTripResponse(trip, serverResponse) {
+
         const [outboundFlight, inboundFlight] = serverResponse.trips,
             availableOutboundFlight = outboundFlight.dates[0].flights.length > 0,
             availableInboundFlight = inboundFlight.dates[0].flights.length > 0;
@@ -252,7 +258,7 @@ class Ryanair {
             const { flightKey, regularFare = null, segments, flightNumber, time, duration } = flightData,
                 hasAvailableSeat = (regularFare !== null);
 
-            let flight = new Flight({
+            const flight = new Flight({
                 //basic info
                 originAirport,
                 destinationAirport,
@@ -276,9 +282,9 @@ class Ryanair {
 
             flight.addSegment(segments);
 
-            return flight
+            return flight;
         });
     }
-};
+}
 
 module.exports = Ryanair;
