@@ -1,4 +1,6 @@
-console.log('------------------------------');
+console.log('*******************************************************');
+console.log('*******************************************************');
+console.log('*******************************************************');
 // direct: !(airport.routes.findIndex(route => (route.includes(`connectingFlight:${iataCode}`))) !== -1)
 
 const Ryanair = require('./classes/models/implementations/Ryanair');
@@ -12,9 +14,9 @@ const t = new Trip();
 // 	name: 'Rodrigo',
 // 	surname: 'Martinez'
 // };
-// return;
+// return;k
 
-testTripBuilder();
+// testTripBuilder();
 function testTripBuilder() {
 	new TripBuilder()
 		.then(tb => {
@@ -35,14 +37,14 @@ function testTripBuilder() {
 		});
 }
 
-// work();
+work();
 function work() {
 	const origin = 'BCN';
-	// const destination = 'OPO';
+	const destination = 'OPO';
 	const departure = '2019-03-18';
 	const returnDate = '2019-03-21';
 
-	const destination = 'ATH';
+	// const destination = 'ATH';
 	// const departure = '2019-03-12';
 
 	// const destination = 'CAG';

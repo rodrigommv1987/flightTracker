@@ -15,7 +15,7 @@ class Trip {
         this.flights = [];
     }
 
-    addOneWayFlight({ outbound: { availableOutboundFlight, flights }, airline, timestamp, dateFormat }) {
+    addOneWayFlight({ outbound: { availableOutboundFlight, flights }, airline, flightSearchURL, timestamp, dateFormat }) {
 
         this.flights.push({
             status: {
@@ -23,6 +23,7 @@ class Trip {
                 availableInboundFlight: false
             },
             airline,
+            flightSearchURL,
             timestamp,
             dateFormat,
             outboundFlights: flights,
@@ -33,7 +34,7 @@ class Trip {
     }
 
     addRoundTripFlight({ outbound: { availableOutboundFlight, flights: outboundFlights },
-        inbound: { availableInboundFlight, flights: inboundFlights }, airline, timestamp, dateFormat }) {
+        inbound: { availableInboundFlight, flights: inboundFlights }, airline, flightSearchURL, timestamp, dateFormat }) {
 
         this.roundTrip = true;
         this.flights.push({
@@ -42,6 +43,7 @@ class Trip {
                 availableInboundFlight
             },
             airline,
+            flightSearchURL,
             timestamp,
             dateFormat,
             outboundFlights: outboundFlights,

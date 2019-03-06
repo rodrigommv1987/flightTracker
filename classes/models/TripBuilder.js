@@ -19,37 +19,10 @@ class TripBuilder {
         return new Promise((resolve, reject) => {
             fs.readdir(__dirname + '/implementations', (err, files) => {
 
-                // this.implementations = files.map(file => {
-
-                //     const implementation = new (require(`${__dirname}/implementations/${file}`));
-                //     return {
-                //         name: implementation.name,
-                //         implementation: {
-                //             file,
-                //             handle: implementation
-                //         }
-                //     };
-                // });
-
-                // const implementations = {};
-                // for (const file of files) {
-
-                //     const implementation = new (require(`${__dirname}/implementations/${file}`));
-
-                //     implementations[implementation.name] = {
-                //         name: implementation.name,
-                //         implementation: {
-                //             file,
-                //             handle: implementation
-                //         }
-                //     };
-                // }
-                // this.implementations = implementations;
-
                 this.airlines = new Map();
                 for (const file of files) {
 
-                    // if (file == 'Vueling.js') break;
+                    if (file == 'Vueling.js') break;
 
                     const implementation = new (require(`${__dirname}/implementations/${file}`));
 
@@ -75,6 +48,7 @@ class TripBuilder {
 
             for (const airline of this.getImplementations) {
 
+                //for each existing airline, save all available airports to the airlines map
                 promises.push(
                     new Promise((resolve, reject) => {
                         airline.fetchAvailableAirports()
@@ -97,10 +71,10 @@ class TripBuilder {
 
     }
 
+    //TODO:
     buildFridayToSundayTrips(originAirport, destinationAirport) {
         //for each implementation
         //get max date for origin airport
-
 
         for (const airline of this.getImplementations) {
             airline.fetchAvailableAirports()
@@ -111,6 +85,10 @@ class TripBuilder {
                     // return r.fetchDestinations(originAirport);
                 });
         }
+    }
+
+    buildOneWayTrips(originAirport, destinationAirport){
+        
     }
 
     get getImplementations() {

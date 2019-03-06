@@ -1,6 +1,7 @@
 const Flight = require('../Flight');
 const Airport = require('../Airport');
 const r = require('../../utils/Request');
+const moment = require('moment');
 
 class Ryanair {
 
@@ -18,7 +19,11 @@ class Ryanair {
         };
 
         this.url = {
-            doTrip: ''
+            doTrip: '',
+            flightSearch: {
+                url: 'https://www.ryanair.com/es/es/booking/home/**originAirport**/**destinationAirport**/**departureDate**/**arrivalDate**/**adults**/**teens**/**children**/**infants**',
+                dateFormat: 'YYYY-MM-DD'
+            }
         };
     }
 
@@ -111,7 +116,8 @@ class Ryanair {
     doSingleTrip(trip) {
 
         const { originAirport, destinationAirport, departureDate, adults = 1, children = 0 } = trip,
-            { locale, doSingleTrip: { dateFormat } } = this.configs;
+            { locale, doSingleTrip: { dateFormat } } = this.configs,
+            { flightSearch: { url, dateFormat: flightSearchDateFormat } } = this.url;
 
         return new Promise((resolve, reject) => {
             r.request({
@@ -143,6 +149,15 @@ class Ryanair {
                     resolve(trip.addOneWayFlight({
                         ...this.parseSingleTripResponse(trip, body),
                         airline: this.name,
+                        flightSearchURL: url
+                            .replace('**originAirport**', originAirport.iataCode)
+                            .replace('**destinationAirport**', destinationAirport.iataCode)
+                            .replace('**departureDate**', moment(departureDate).format(flightSearchDateFormat))
+                            .replace('**arrivalDate**', '')
+                            .replace('**adults**', adults)
+                            .replace('**teens**', 0)
+                            .replace('**children**', children)
+                            .replace('**infants**', 0),
                         timestamp: (+new Date()),
                         dateFormat
                     }));
@@ -176,7 +191,8 @@ class Ryanair {
     doRoundTrip(trip) {
 
         const { originAirport, destinationAirport, departureDate, returnDate, adults = 1, children = 0 } = trip,
-            { locale, doRoundTrip: { dateFormat } } = this.configs;
+            { locale, doRoundTrip: { dateFormat } } = this.configs,
+            { flightSearch: { url, dateFormat: flightSearchDateFormat } } = this.url;
 
         return new Promise((resolve, reject) => {
             r.request({
@@ -210,6 +226,15 @@ class Ryanair {
                     resolve(trip.addRoundTripFlight({
                         ...this.parseRoundTripResponse(trip, body),
                         airline: this.name,
+                        flightSearchURL: url
+                            .replace('**originAirport**', originAirport.iataCode)
+                            .replace('**destinationAirport**', destinationAirport.iataCode)
+                            .replace('**departureDate**', moment(departureDate).format(flightSearchDateFormat))
+                            .replace('**arrivalDate**', moment(returnDate).format(flightSearchDateFormat))
+                            .replace('**adults**', adults)
+                            .replace('**teens**', 0)
+                            .replace('**children**', children)
+                            .replace('**infants**', 0),
                         timestamp: (+new Date()),
                         dateFormat
                     }));
