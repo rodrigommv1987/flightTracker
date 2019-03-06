@@ -1,4 +1,7 @@
 const fs = require('fs');
+const moment = require('moment');
+const Trip = require('./Trip');
+const { wait } = require('../utils/Utils.js');
 
 class TripBuilder {
 
@@ -55,7 +58,7 @@ class TripBuilder {
                             .then(airports => {
                                 this.airlines.set(airline.name, {
                                     ...this.airlines.get(airline.name),
-                                    availableAirports: airports.slice(0, 5)
+                                    availableAirports: airports
                                 });
                                 resolve();
                             });
@@ -87,8 +90,26 @@ class TripBuilder {
         }
     }
 
-    buildOneWayTrips(originAirport, destinationAirport){
-        
+    async buildOneWayTrips(originAirportIata, destinationAirportIata) {
+
+        for (const airline of this.getImplementations) {
+            const originAirport = await airline.findAirport(originAirportIata);
+            const destinationAirport = await airline.findAirport(destinationAirportIata);
+            const availableDates = (
+                await airline.fetchAvailableDates(originAirport, destinationAirport)
+            ).slice(0, 5);
+
+            for (const date of availableDates) {
+                const t = new Trip(
+                    originAirport,
+                    destinationAirport,
+                    moment(date).format(airline.configs.doSingleTrip.dateFormat)
+                );
+                console.log(t);
+                await wait(1000);
+            }
+
+        }
     }
 
     get getImplementations() {

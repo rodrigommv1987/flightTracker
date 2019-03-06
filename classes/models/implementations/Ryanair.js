@@ -27,6 +27,36 @@ class Ryanair {
         };
     }
 
+    findAirport(targetIataCode) {
+        const { locale } = this.configs;
+
+        return new Promise((resolve, reject) => {
+            r.request({
+                method: 'GET',
+                json: true,
+                url: [
+                    `https://api.ryanair.com/aggregate/4/common?`,
+                    `embedded=airports&`,
+                    `market=${locale}`
+                ].join('')
+            },
+                (error, response, { airports }) => {
+                    if (error) {
+                        // console.log(`Error found in fetchDestinations`);
+                        // console.log(error);
+                        return;
+                    }
+
+                    const [{ name, cityCode, countryCode, iataCode }] = airports.filter(airport => (airport.iataCode === targetIataCode));
+                    
+                    resolve(new Airport({
+                        name, cityCode, countryCode, iataCode
+                    }));
+                }
+            );
+        });
+    }
+
     fetchAvailableAirports() {
         const { locale } = this.configs;
 

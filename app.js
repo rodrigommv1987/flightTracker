@@ -1,3 +1,4 @@
+/* eslint-disable */
 console.log('*******************************************************');
 console.log('*******************************************************');
 console.log('*******************************************************');
@@ -14,7 +15,7 @@ const t = new Trip();
 // 	name: 'Rodrigo',
 // 	surname: 'Martinez'
 // };
-// return;k
+// return;
 
 // testTripBuilder();
 function testTripBuilder() {
@@ -37,7 +38,7 @@ function testTripBuilder() {
 		});
 }
 
-work();
+// work();
 function work() {
 	const origin = 'BCN';
 	const destination = 'OPO';
@@ -49,7 +50,6 @@ function work() {
 
 	// const destination = 'CAG';
 	// const departure = '2019-03-15';
-
 
 	r.fetchAvailableAirports()
 		.then(airports => airports.find(airport => airport.iataCode == origin))
@@ -75,5 +75,18 @@ function work() {
 			// 	flight.oubound
 			// });
 			console.log("fin");
+		});
+}
+
+buildOneWayTrips()
+function buildOneWayTrips() {
+	const origin = 'BCN';
+	const destination = 'OPO';
+	const departure = '2019-03-18';
+	const returnDate = '2019-03-21';
+
+	new TripBuilder()
+		.then(tb => {
+			tb.buildOneWayTrips(origin,destination);
 		});
 }
