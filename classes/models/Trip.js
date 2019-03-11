@@ -52,6 +52,10 @@ class Trip {
 
         return this;
     }
+
+    fromJSON(){
+        
+    }
 }
 
 module.exports = Trip;

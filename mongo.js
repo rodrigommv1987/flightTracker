@@ -1,48 +1,39 @@
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
+/* eslint-disable */
+const db = require('./classes/models/DB');
 
-// Connection URL
-const url = 'mongodb://localhost:27017';
+(async () => {
+	const Ryanair = require('./classes/models/implementations/Ryanair');
+	const Trip = require('./classes/models/Trip');
+	const moment = require('moment');
+	const r = new Ryanair();
+	const t = new Trip();
+	const origin = 'BCN';
+	const destination = 'OPO';
+	const departure = '2019-03-18';
+	const returnDate = '2019-03-21';
+	
+	// let allPendingTrips = await db.selectAllPendingTrips();
+	// console.log("estos son los pendingTrips: ", allPendingTrips);
+	
+	// console.log("dropping PendingTrips");
+	// await db.dropPendingTrips();
+	
+	// allPendingTrips = await db.selectAllPendingTrips();
+	// console.log("estos son los pendingTrips: ", allPendingTrips);
 
-// Database Name
-const dbName = 'myproject';
-
-const insertDocuments = function (db, callback) {
-	// Get the documents collection
-	const collection = db.collection('documents');
-	// Insert some documents
-	collection.insertMany([
-		{ a: 1 }, { a: 2 }, { a: 3 }
-	], function (err, result) {
-		assert.equal(err, null);
-		assert.equal(3, result.result.n);
-		assert.equal(3, result.ops.length);
-		// console.log("Inserted 3 documents into the collection");
-		callback(result);
-	});
-};
-
-const findDocuments = function (db, callback) {
-	// Get the documents collection
-	const collection = db.collection('documents');
-	// Find some documents
-	collection.find({}).toArray(function (err, docs) {
-		assert.equal(err, null);
-		// console.log("Found the following records");
-		// console.log(docs)
-		callback(docs);
-	});
-};
-
-// Use connect method to connect to the server
-MongoClient.connect(url, function (err, client) {
-	assert.equal(null, err);
-	// console.log("Connected successfully to server");
-
-	const db = client.db(dbName);
-	insertDocuments(db, () => {
-		findDocuments(db, () => {
-			client.close();
+	// return;
+	r.fetchAvailableAirports()
+		.then(airports => airports.find(airport => airport.iataCode == origin))
+		.then(originAirport => {
+			t.originAirport = originAirport;
+			return r.fetchDestinations(originAirport);
+		})
+		.then(destinations => destinations.find(airport => airport.iataCode == destination))
+		.then(async destinationAirport => {
+			t.departureDate = moment(departure).format(r.configs.doSingleTrip.dateFormat);
+			t.destinationAirport = destinationAirport;
+			t.returnDate = moment(returnDate).format(r.configs.doRoundTrip.dateFormat);
+			// console.log(t);
+			// await db.savePendingTrip(t);
 		});
-	});
-});
+})();

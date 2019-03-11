@@ -90,26 +90,65 @@ class TripBuilder {
         }
     }
 
-    async buildOneWayTrips(originAirportIata, destinationAirportIata) {
+    buildOneWayTrips(originAirportIata, destinationAirportIata) {
 
+        return new Promise((buildOneWayTripsResolve, reject) => {
+
+            for (const airline of this.getImplementations) {
+
+                let originAirport, destinationAirport, availableDates;
+
+                Promise.all([
+                    airline.findAirport(originAirportIata),
+                    airline.findAirport(destinationAirportIata)
+                ])
+                    .then((airports) => {
+                        originAirport = airports[0];
+                        destinationAirport = airports[1];
+                        return airline.fetchAvailableDates(originAirport, destinationAirport)
+                    })
+                    .then(response => {
+
+                        availableDates = response.slice(0, 5);
+                        const trips = [];
+
+                        for (const date of availableDates) {
+                            const t = new Trip(
+                                originAirport,
+                                destinationAirport,
+                                moment(date).format(airline.configs.doSingleTrip.dateFormat)
+                            );
+                            trips.push(t);
+                        }
+                        buildOneWayTripsResolve(trips);
+                    });
+            }
+        });
+
+    }
+
+    async buildOneWayTripsAsync(originAirportIata, destinationAirportIata) {
+
+        const trips = [];
         for (const airline of this.getImplementations) {
             const originAirport = await airline.findAirport(originAirportIata);
             const destinationAirport = await airline.findAirport(destinationAirportIata);
             const availableDates = (
                 await airline.fetchAvailableDates(originAirport, destinationAirport)
             ).slice(0, 5);
-
             for (const date of availableDates) {
                 const t = new Trip(
                     originAirport,
                     destinationAirport,
                     moment(date).format(airline.configs.doSingleTrip.dateFormat)
                 );
-                console.log(t);
-                await wait(1000);
+                trips.push(t);
+                // console.log(t);
+                // await wait(1000);
             }
-
         }
+        // console.log(trips);
+        return trips;
     }
 
     get getImplementations() {
