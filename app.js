@@ -20,8 +20,9 @@ const t = new Trip();
 // testTripBuilder();
 function testTripBuilder() {
 	new TripBuilder()
-		.then(tb => {
-			tb.loadAvailableAirports().then(a => console.log(a));
+		.then(async tb => {
+			await tb.loadAvailableAirports()
+			console.log(tb);
 			return;
 			const origin = 'BCN';
 			// const destination = 'OPO';
@@ -38,48 +39,8 @@ function testTripBuilder() {
 		});
 }
 
-// work();
-function work() {
-	const origin = 'BCN';
-	const destination = 'OPO';
-	const departure = '2019-03-18';
-	const returnDate = '2019-03-21';
-
-	// const destination = 'ATH';
-	// const departure = '2019-03-12';
-
-	// const destination = 'CAG';
-	// const departure = '2019-03-15';
-
-	r.fetchAvailableAirports()
-		.then(airports => airports.find(airport => airport.iataCode == origin))
-		.then(originAirport => {
-			t.originAirport = originAirport;
-			return r.fetchDestinations(originAirport);
-		})
-		.then(destinations => destinations.find(airport => airport.iataCode == destination))
-		.then(destinationAirport => {
-			t.departureDate = moment(departure).format(r.configs.doSingleTrip.dateFormat);
-			t.destinationAirport = destinationAirport;
-			t.returnDate = moment(returnDate).format(r.configs.doRoundTrip.dateFormat);
-
-			// return r.fetchAvailableDates(t.originAirport, t.destinationAirport);
-			// return r.doSingleTrip(t);
-			return r.doRoundTrip(t);
-		})
-		.then(trip => {
-
-			console.log(JSON.stringify(trip));
-			// trip.flights.forEach(flight => {
-			// 	console.log(flight);
-			// 	flight.oubound
-			// });
-			console.log("fin");
-		});
-}
-
-workAsync();
-async function workAsync(){
+// workAsync();
+async function workAsync() {
 	const origin = 'BCN';
 	const destination = 'OPO';
 	const departure = '2019-03-18';
@@ -110,62 +71,50 @@ async function workAsync(){
 
 	const resolvedRoundTrip = await r.doRoundTrip(t);
 	console.log(resolvedRoundTrip);
-
-	/*
-
-			// return r.fetchAvailableDates(t.originAirport, t.destinationAirport);
-			// return r.doSingleTrip(t);
-			return r.doRoundTrip(t);
-		})
-		.then(trip => {
-
-			console.log(JSON.stringify(trip));
-			// trip.flights.forEach(flight => {
-			// 	console.log(flight);
-			// 	flight.oubound
-			// });
-			console.log("fin");
-		});
-		*/
 }
 
-// buildOneWayTrips()
+buildOneWayTrips()
 function buildOneWayTrips() {
 	const origin = 'BCN';
 	const destination = 'OPO';
 	const departure = '2019-03-18';
 	const returnDate = '2019-03-21';
+	const fs = require('fs');
 
-	new TripBuilder()
-		.then(tb => {
-			tb.buildOneWayTrips(origin, destination).then(trips =>
-				console.log(JSON.stringify(trips))
-			);
-		});
+	new TripBuilder().then(async tb => {
+		let i=1;
+		for await (let filteredItem of tb.buildOneWayTripsGenerator(origin)){
+			// console.log(filteredItem);
+			fs.writeFile(`./json/trips${i}.json`, JSON.stringify(filteredItem), () => {}); 
+			i++;
+			// console.log(JSON.stringify(trips))
+		}
+	});
+
 	// .then(async tb => {
 	// 	const t = await tb.buildOneWayTripsAsync(origin, destination);
 	// 	console.log(JSON.stringify(t));
 	// });
 }
 
-function testPromiseAll() {
-	const fs = require('fs');
+async function testAsyncConstructor() {
 
-	return Promise.all([
-		new Promise(resolve => {
-			fs.readdir(__dirname, (err, files) => resolve(files));
-		}),
-		new Promise(resolve => {
-			fs.readdir(__dirname, (err, files) => resolve(files));
-		}),
-		new Promise(resolve => {
-			fs.readdir(__dirname, (err, files) => resolve(files));
-		}),
-	]);
+	class AsyncConstructor {
+		constructor() {
+			return (async () => {
+
+				// All async code here
+				console.log("constructor: antes de await");
+				this.value = await r.fetchAvailableAirports();
+				this.value = this.value.slice(0, 2);
+				console.log(this.value);
+				return this; // when done
+			})();
+		}
+	}
+
+	console.log("antes de instance");
+	let instance = await new AsyncConstructor();
+	console.log(instance);
 }
-
-// testPromiseAll().then(values => {
-// 	for (const value of values) {
-// 		console.log(value);
-// 	}
-// })
+// testAsyncConstructor();

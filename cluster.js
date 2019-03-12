@@ -18,7 +18,6 @@ else {
 
 function init() {
     cluster.on('online', function (worker) {
-        console.log('Worker ' + worker.process.pid + ' is online: ');
     });
 
     cluster.on('exit', function (worker, code, signal) {
@@ -30,7 +29,7 @@ function init() {
         console.log(`Master received message: ${message.type}`);
 
         switch (message.type) {
-            case 'finishedInit': {
+            case 'tripBuilderWorkerFinishedInit': {
                 console.log("sending createTrips order to tripBuilderWorker");
                 tripBuilderWorker.send({
                     type: 'createTrips'

@@ -43,39 +43,22 @@ class TripBuilder {
         });
     }
 
-    loadAvailableAirports() {
+    async loadAvailableAirports() {
 
-        return new Promise((loadAvailableAirportsResolve, reject) => {
+        let airports;
+        for (const airline of this.getImplementations) {
 
-            const promises = [];
-
-            for (const airline of this.getImplementations) {
-
-                //for each existing airline, save all available airports to the airlines map
-                promises.push(
-                    new Promise((resolve, reject) => {
-                        airline.fetchAvailableAirports()
-                            .then(airports => {
-                                this.airlines.set(airline.name, {
-                                    ...this.airlines.get(airline.name),
-                                    availableAirports: airports
-                                });
-                                resolve();
-                            });
-                    })
-                );
-            }
-            Promise.all(
-                promises
-            ).then(() => {
-                loadAvailableAirportsResolve(this);
+            //for each existing airline, save all available airports to the airlines map
+            airports = await airline.fetchAvailableAirports();
+            this.airlines.set(airline.name, {
+                ...this.airlines.get(airline.name),
+                availableAirports: airports
             });
-        });
-
+        }
     }
 
-    //TODO:
     buildFridayToSundayTrips(originAirport, destinationAirport) {
+        //TODO:
         //for each implementation
         //get max date for origin airport
 
@@ -90,65 +73,67 @@ class TripBuilder {
         }
     }
 
-    buildOneWayTrips(originAirportIata, destinationAirportIata) {
+    async buildOneWayTrips(originAirportIata/*, destinationAirportIata*/) {
 
-        return new Promise((buildOneWayTripsResolve, reject) => {
-
-            for (const airline of this.getImplementations) {
-
-                let originAirport, destinationAirport, availableDates;
-
-                Promise.all([
-                    airline.findAirport(originAirportIata),
-                    airline.findAirport(destinationAirportIata)
-                ])
-                    .then((airports) => {
-                        originAirport = airports[0];
-                        destinationAirport = airports[1];
-                        return airline.fetchAvailableDates(originAirport, destinationAirport)
-                    })
-                    .then(response => {
-
-                        availableDates = response.slice(0, 5);
-                        const trips = [];
-
-                        for (const date of availableDates) {
-                            const t = new Trip(
-                                originAirport,
-                                destinationAirport,
-                                moment(date).format(airline.configs.doSingleTrip.dateFormat)
-                            );
-                            trips.push(t);
-                        }
-                        buildOneWayTripsResolve(trips);
-                    });
-            }
-        });
-
-    }
-
-    async buildOneWayTripsAsync(originAirportIata, destinationAirportIata) {
-
-        const trips = [];
+        // let trips = [];
+        //for each airline
         for (const airline of this.getImplementations) {
             const originAirport = await airline.findAirport(originAirportIata);
-            const destinationAirport = await airline.findAirport(destinationAirportIata);
-            const availableDates = (
-                await airline.fetchAvailableDates(originAirport, destinationAirport)
-            ).slice(0, 5);
-            for (const date of availableDates) {
-                const t = new Trip(
-                    originAirport,
-                    destinationAirport,
-                    moment(date).format(airline.configs.doSingleTrip.dateFormat)
+            const availableDestinations = airline.fetchDestinations(originAirport);
+
+            for (const destinationAirport of availableDestinations) {
+
+                const availableDates = (
+                    await airline.fetchAvailableDates(originAirport, destinationAirport)
                 );
-                trips.push(t);
-                // console.log(t);
-                // await wait(1000);
+
+                //for each available date
+                for (const date of availableDates) {
+                    trips.push(new Trip(
+                        originAirport,
+                        destinationAirport,
+                        moment(date).format(airline.configs.doSingleTrip.dateFormat)
+                    ));
+                    // console.log(t);
+                    await wait(1000);
+                }
+                // await db.savePendingTrips(trips);                
             }
+
         }
         // console.log(trips);
-        return trips;
+        // return trips;
+    }
+
+    async * buildOneWayTripsGenerator(originAirportIata/*, destinationAirportIata*/) {
+
+        //for each airline
+        for (const airline of this.getImplementations) {
+            const originAirport = await airline.findAirport(originAirportIata);
+            const availableDestinations = await airline.fetchDestinations(originAirport);
+
+
+            //for each available destination
+            for (const destinationAirport of availableDestinations) {
+                const availableDates = (
+                    await airline.fetchAvailableDates(originAirport, destinationAirport)
+                );
+
+                const trips = [];
+                //for each available date
+                for (const date of availableDates) {
+                    trips.push(new Trip(
+                        originAirport,
+                        destinationAirport,
+                        moment(date).format(airline.configs.doSingleTrip.dateFormat)
+                    ));
+                }
+                yield trips;
+            }
+
+        }
+        // console.log(trips);
+        // return trips;
     }
 
     get getImplementations() {
