@@ -1,6 +1,6 @@
 var cluster = require('cluster');
 let tripBuilderWorker; 
-
+const db = require('./classes/models/DB');
 
 if (cluster.isMaster) {
 
@@ -24,22 +24,23 @@ function init() {
         console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
     });
 
-    cluster.on('message', (worker, message, handle) => {
+    cluster.on('message', async (worker, message, handle) => {
         
-        console.log(`Master received message: ${message.type}`);
+        // console.log(`Master received message: ${message.type}`);
 
         switch (message.type) {
-            case 'tripBuilderWorkerFinishedInit': {
-                console.log("sending createTrips order to tripBuilderWorker");
+            case 'tripBuilderWorker-ready': {
+                console.log("Master: sending buildOneWayTrips order to tripBuilderWorker");
                 tripBuilderWorker.send({
-                    type: 'createTrips'
+                    type: 'buildOneWayTrips-init'
                 });
                 break;
             }
-            case 'finishedCreateTrips': {
-                console.log("trips received from tripBuilderWorker");
-                console.log((message.data));
-                process.exit(0);                
+            case 'buildOneWayTrips-end': {
+                console.log("Master: buildOneWayTrips-end order received from tripBuilderWorker");
+                const data = await db.selectAllPendingTrips();
+                console.log(JSON.stringify(data)); 
+                process.exit(0);
                 break;
             }
             default:

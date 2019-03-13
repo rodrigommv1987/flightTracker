@@ -1,30 +1,34 @@
 
 const TripBuilder = require('../models/TripBuilder');
+const db = require('../models/DB');
+const origin = 'OPO';
 
 
-const origin = 'BCN';
+process.on("message", async (message) => {
 
-new TripBuilder().then(tb => {
+    const tb = await new TripBuilder();
 
-    process.on("message", async (message) => {
+    if (message.type === "buildOneWayTrips-init") {
 
-        if (message.type === "createTrips") {
-    
-            const trips = await tb.buildOneWayTrips(origin);
-            // console.log(JSON.stringify(trips));
-
-            // for await (const filteredItem of filterAsyncData())
-            // console.log(filteredItem);
-
-            process.send({
-                type: 'finishedCreateTrips',
-                data: JSON.stringify(trips)
-            });
+        for await (const trips of tb.buildOneWayTrips(origin)) {
+            // console.log('found trips: ', trips);
+            // console.log("before savePendingTrips");
+            const success = await db.savePendingTrips(trips);
+            // console.log("after savePendingTrips");
+            (success) ? 
+                console.log(`inserted ${trips.length} trips`)
+                :
+                console.log(`insert failed`)
+                ;
         }
-    });
 
-    //notify to parent process end of init process
-    process.send({
-        type: 'tripBuilderWorkerFinishedInit'
-    });
+        process.send({
+            type: 'buildOneWayTrips-end'
+        });
+    }
+});
+
+//notify to parent process end of init process
+process.send({
+    type: 'tripBuilderWorker-ready'
 });

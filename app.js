@@ -73,7 +73,7 @@ async function workAsync() {
 	console.log(resolvedRoundTrip);
 }
 
-buildOneWayTrips()
+// buildOneWayTrips()
 function buildOneWayTrips() {
 	const origin = 'BCN';
 	const destination = 'OPO';
@@ -83,11 +83,10 @@ function buildOneWayTrips() {
 
 	new TripBuilder().then(async tb => {
 		let i=1;
-		for await (let filteredItem of tb.buildOneWayTripsGenerator(origin)){
-			// console.log(filteredItem);
-			fs.writeFile(`./json/trips${i}.json`, JSON.stringify(filteredItem), () => {}); 
+		for await (let trips of tb.buildOneWayTripsGenerator(origin)){
+			// console.log(trips);
+			fs.writeFile(`./json/trips${i}.json`, JSON.stringify(trips), () => {}); 
 			i++;
-			// console.log(JSON.stringify(trips))
 		}
 	});
 
@@ -113,8 +112,9 @@ async function testAsyncConstructor() {
 		}
 	}
 
-	console.log("antes de instance");
-	let instance = await new AsyncConstructor();
-	console.log(instance);
+	console.log("antes de tripBuilder");
+	const tb = await new TripBuilder();
+	console.log(tb.getImplementations);
+	console.log("despues de tripBuilder");
 }
 // testAsyncConstructor();

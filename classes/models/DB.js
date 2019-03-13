@@ -64,6 +64,8 @@ class DB {
 
     async savePendingTrips(pt) {
 
+        if (pt.length === 0) return;
+
         const { pendingTrips } = this.collections,
             collection = await this.getCollection(pendingTrips);
 

@@ -7,14 +7,10 @@ class TripBuilder {
 
     constructor() {
 
-        //the constructor resolves when all internal async operations are finished
-        return new Promise((constructorResolve, reject) => {
-            Promise.all([
-                this.loadImplementations()
-            ]).then(() => {
-                constructorResolve(this);
-            });
-        });
+        return (async () => {
+            await this.loadImplementations();
+            return this;
+        })();
     }
 
     loadImplementations() {
@@ -73,39 +69,7 @@ class TripBuilder {
         }
     }
 
-    async buildOneWayTrips(originAirportIata/*, destinationAirportIata*/) {
-
-        // let trips = [];
-        //for each airline
-        for (const airline of this.getImplementations) {
-            const originAirport = await airline.findAirport(originAirportIata);
-            const availableDestinations = airline.fetchDestinations(originAirport);
-
-            for (const destinationAirport of availableDestinations) {
-
-                const availableDates = (
-                    await airline.fetchAvailableDates(originAirport, destinationAirport)
-                );
-
-                //for each available date
-                for (const date of availableDates) {
-                    trips.push(new Trip(
-                        originAirport,
-                        destinationAirport,
-                        moment(date).format(airline.configs.doSingleTrip.dateFormat)
-                    ));
-                    // console.log(t);
-                    await wait(1000);
-                }
-                // await db.savePendingTrips(trips);                
-            }
-
-        }
-        // console.log(trips);
-        // return trips;
-    }
-
-    async * buildOneWayTripsGenerator(originAirportIata/*, destinationAirportIata*/) {
+    async * buildOneWayTrips(originAirportIata) {
 
         //for each airline
         for (const airline of this.getImplementations) {
@@ -130,10 +94,7 @@ class TripBuilder {
                 }
                 yield trips;
             }
-
         }
-        // console.log(trips);
-        // return trips;
     }
 
     get getImplementations() {
