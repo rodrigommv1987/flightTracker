@@ -1,42 +1,11 @@
-const fs = require('fs');
+const TripBase = require('./TripBase');
 const moment = require('moment');
 const Trip = require('./Trip');
-const { wait } = require('../utils/Utils.js');
 
-class TripBuilder {
+class TripBuilder extends TripBase {
 
     constructor() {
-
-        return (async () => {
-            await this.loadImplementations();
-            return this;
-        })();
-    }
-
-    loadImplementations() {
-
-        return new Promise((resolve, reject) => {
-            fs.readdir(__dirname + '/implementations', (err, files) => {
-
-                this.airlines = new Map();
-                for (const file of files) {
-
-                    if (file == 'Vueling.js') break;
-
-                    const implementation = new (require(`${__dirname}/implementations/${file}`));
-
-                    this.airlines.set(implementation.name, {
-                        name: implementation.name,
-                        implementation: {
-                            file,
-                            handle: implementation
-                        }
-                    });
-                }
-
-                resolve(this);
-            });
-        });
+        super();
     }
 
     async loadAvailableAirports() {
@@ -78,14 +47,14 @@ class TripBuilder {
 
 
             //for each available destination
-            for (const destinationAirport of availableDestinations) {
+            for (const destinationAirport of availableDestinations.slice(0,5)) {
                 const availableDates = (
                     await airline.fetchAvailableDates(originAirport, destinationAirport)
                 );
 
                 const trips = [];
                 //for each available date
-                for (const date of availableDates) {
+                for (const date of availableDates.slice(0,5)) {
                     trips.push(new Trip(
                         originAirport,
                         destinationAirport,
@@ -96,15 +65,6 @@ class TripBuilder {
             }
         }
     }
-
-    get getImplementations() {
-        const imps = [];
-        for (const { implementation: { handle } } of this.airlines.values()) {
-            imps.push(handle);
-        }
-        return imps;
-    }
-
 }
 
 module.exports = TripBuilder;

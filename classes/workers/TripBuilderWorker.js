@@ -1,34 +1,41 @@
-
+//require
 const TripBuilder = require('../models/TripBuilder');
 const db = require('../models/DB');
-const origin = 'OPO';
+const { actions, state } = require('../models/Constants');
 
+//const
+const { workerType: me } = process.env;
+
+const origin = 'BCN';
 
 process.on("message", async (message) => {
 
-    const tb = await new TripBuilder();
+    switch (message.type) {
 
-    if (message.type === "buildOneWayTrips-init") {
+        case actions.tripBuilderWorker.buildOneWayTrips.init: {
 
-        for await (const trips of tb.buildOneWayTrips(origin)) {
-            // console.log('found trips: ', trips);
-            // console.log("before savePendingTrips");
-            const success = await db.savePendingTrips(trips);
-            // console.log("after savePendingTrips");
-            (success) ? 
-                console.log(`inserted ${trips.length} trips`)
-                :
-                console.log(`insert failed`)
-                ;
+            const tb = await new TripBuilder();
+
+            for await (const trips of tb.buildOneWayTrips(origin)) {
+                const success = await db.savePendingTrips(trips);
+                (success) ?
+                    console.log(`inserted ${trips.length} trips`)
+                    :
+                    console.log(`insert failed`)
+                    ;
+            }
+
+            process.send({
+                from: me,
+                type: actions.tripBuilderWorker.buildOneWayTrips.end
+            });
+            break;
         }
-
-        process.send({
-            type: 'buildOneWayTrips-end'
-        });
     }
 });
 
 //notify to parent process end of init process
 process.send({
-    type: 'tripBuilderWorker-ready'
+    from: me,
+    type: state.tripBuilderWorker.ready
 });

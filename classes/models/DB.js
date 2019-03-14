@@ -7,15 +7,15 @@ class DB {
     constructor() {
 
         this.collections = {
-            trip: 'trip',
+            resolvedTrips: 'resolvedTrips',
             pendingTrips: 'pendingTrips'
         };
     }
 
-    async selectAllTrip() {
+    async selectAllResolvedTrip() {
 
-        const { trip } = this.collections,
-            collection = await this.getCollection(trip);
+        const { resolvedTrips } = this.collections,
+            collection = await this.getCollection(resolvedTrips);
 
         const docs = await collection.find().toArray();
 
@@ -23,15 +23,15 @@ class DB {
         return docs;
     }
 
-    async saveTrip(t) {
-        const { trip } = this.collections,
-            collection = await this.getCollection(trip);
+    async saveResolvedTrips(rt) {
+        const { resolvedTrips } = this.collections,
+            collection = await this.getCollection(resolvedTrips);
 
-        const r = await collection.insertOne(t);
+        const r = await collection.insertMany(rt);
 
         this.close();
 
-        return (r.insertedCount === 1);
+        return (r.insertedCount === rt.length);
     }
 
     async selectAllPendingTrips() {
@@ -41,6 +41,19 @@ class DB {
 
         const docs = await collection.find().toArray();
 
+        this.close();
+        return docs;
+    }
+
+    async getPendingTripsBatch() {
+
+        const batchSize = 5,
+            { pendingTrips } = this.collections,
+            collection = await this.getCollection(pendingTrips);
+
+        const docs = await collection.find().limit(batchSize).toArray();
+        const ids = docs.map(function (doc) { return doc._id; });
+        await collection.deleteMany({ _id: { $in: ids } });
         this.close();
         return docs;
     }
@@ -98,5 +111,10 @@ class DB {
 }
 
 const db = new DB();
+
+// (async (params) => {
+//     const a = await db.getPendingTripsBatch();
+//     console.table(a);
+// })();
 
 module.exports = db;
