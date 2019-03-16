@@ -1,5 +1,6 @@
 //require
 const TripResolver = require('../models/TripResolver');
+const Trip = require('../models/Trip');
 const db = require('../models/DB');
 const { actions, state } = require('../models/Constants');
 
@@ -16,21 +17,16 @@ process.on("message", async (message) => {
             const tr = await new TripResolver();
 
             //fetch pendingTrips
-            const pendingTrips = await db.getPendingTripsBatch();
-            console.table(pendingTrips);
-
-            /*
-                convertir los pendingtrips traidos de la base de datos a objetos 
-                de la clase Trip, implementar el fromJSON de la clase trip
-            */
-
+            const pendingTrips = Trip.fromJSON(await db.getPendingTripsBatch());
 
             const resolvedTrips = await tr.resolveOneWayTrips(pendingTrips);
-            // await db.saveResolvedTrips(resolvedTrips);
-            // process.send({
-            //     from: me,
-            //     type: actions.tripResolverWorker.resolvePendingOneWayTrips.end
-            // });
+
+            await db.saveResolvedTrips(resolvedTrips);
+            
+            process.send({
+                from: me,
+                type: actions.tripResolverWorker.resolvePendingOneWayTrips.end
+            });
             break;
         }
     }

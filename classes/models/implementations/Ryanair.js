@@ -5,7 +5,7 @@ const moment = require('moment');
 
 class Ryanair {
 
-    constructor(params) {
+    constructor() {
 
         this.name = "Ryanair";
         this.configs = {
@@ -13,6 +13,9 @@ class Ryanair {
                 dateFormat: 'YYYY-MM-DD'
             },
             doRoundTrip: {
+                dateFormat: 'YYYY-MM-DD'
+            },
+            fetchAvailableDates: {
                 dateFormat: 'YYYY-MM-DD'
             },
             locale: 'es-es'
@@ -123,21 +126,32 @@ class Ryanair {
     }
 
     fetchAvailableDates({ iataCode: originIataCode }, { iataCode: destinationIataCode }) {
+        const { fetchAvailableDates: { dateFormat } } = this.configs;
 
         return new Promise((resolve, reject) => {
             r.request({
                 method: 'GET',
-                url: `https://services-api.ryanair.com/farfnd/3/oneWayFares/${originIataCode}/${destinationIataCode}/availabilities`,
-                json: true
+                json: true,
+                //old url endpoint
+                // url: `https://services-api.ryanair.com/farfnd/3/oneWayFares/${originIataCode}/${destinationIataCode}/availabilities`,
+                url: [
+                    `https://desktopapps.ryanair.com/v4/Calendar?`,
+                    `Origin=${originIataCode}&`,
+                    `Destination=${destinationIataCode}&`,
+                    `IncludeConnectingFlights=true&`,
+                    `IsTwoWay=false&`,
+                    `Months=17`,
+                    `&StartDate=${moment(new Date()).format(dateFormat)}`
+                ].join('')                
             },
-                (error, response, body) => {
+                (error, response, {outboundDates, returnDates}) => {
                     if (error) {
                         // console.log(`Error found in fetchAvailableDates`);
                         // console.log(error);
                         return;
                     }
 
-                    resolve(body.map(date => new Date(date)));
+                    resolve(outboundDates.map(date => new Date(date)));
                 }
             );
         });

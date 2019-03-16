@@ -2,6 +2,7 @@
 const cluster = require('cluster');
 const db = require('./classes/models/DB');
 const { workers, actions, state } = require('./classes/models/Constants');
+const { logSend, logReceive } = require('./classes/utils/Utils');
 
 //const
 let tripBuilderWorker, tripResolverWorker;
@@ -42,8 +43,6 @@ function init() {
 
     cluster.on('message', async (worker, message, handle) => {
 
-        // console.log(`Master received message: ${message.type}`);
-
         switch (message.from) {
             case workers.tripBuilderWorker: {
                 resolveTripBuilderMessage(message);
@@ -63,19 +62,15 @@ async function resolveTripBuilderMessage(message) {
 
     switch (message.type) {
         case state.tripBuilderWorker.ready: {
-            console.log(`Master: sending ${actions.tripBuilderWorker.buildOneWayTrips.init} action to ${workers.tripBuilderWorker}`);
+            logSend(actions.tripBuilderWorker.buildOneWayTrips.init, workers.tripBuilderWorker);
             tripBuilderWorker.send({
                 type: actions.tripBuilderWorker.buildOneWayTrips.init
             });
             break;
         }
         case actions.tripBuilderWorker.buildOneWayTrips.end: {
-            console.log(`Master: received ${actions.tripBuilderWorker.buildOneWayTrips.end} action from ${workers.tripBuilderWorker}`);
-            const data = await db.selectAllPendingTrips();
-            // console.log(JSON.stringify(data));
-            console.table(data);
-
-            console.log(`Master: sending ${actions.tripResolverWorker.resolvePendingOneWayTrips.init} action to ${workers.tripResolverWorker}`);
+            logReceive(actions.tripBuilderWorker.buildOneWayTrips.end, workers.tripBuilderWorker);
+            logSend(actions.tripResolverWorker.resolvePendingOneWayTrips.init, workers.tripResolverWorker);
             tripResolverWorker.send({
                 type: actions.tripResolverWorker.resolvePendingOneWayTrips.init
             });
@@ -89,17 +84,11 @@ async function resolveTripBuilderMessage(message) {
 async function resolveTripResolverMessage(message) {
 
     switch (message.type) {
-        case state.tripResolverWorker.ready: {
-            console.log(`Master: sending ${actions.tripResolverWorker.resolvePendingOneWayTrips.init} action to ${workers.tripResolverWorker}`);
-            tripResolverWorker.send({
-                type: actions.tripResolverWorker.resolvePendingOneWayTrips.init
-            });
-            break;
-        }
-        case actions.tripResolverWorker.resolvePendingOneWayTrips.end: {
-            console.log(`Master: received ${actions.tripResolverWorker.resolvePendingOneWayTrips.end} action from ${workers.tripResolverWorker}`);
+         case actions.tripResolverWorker.resolvePendingOneWayTrips.end: {
+            logReceive(actions.tripResolverWorker.resolvePendingOneWayTrips.end, workers.tripResolverWorker);
             const allResolvedTrips = await db.selectAllResolvedTrip();
             console.table(allResolvedTrips);
+            process.exit(0);
             break;
         }
         default:

@@ -47,7 +47,7 @@ class DB {
 
     async getPendingTripsBatch() {
 
-        const batchSize = 5,
+        const batchSize = 10,
             { pendingTrips } = this.collections,
             collection = await this.getCollection(pendingTrips);
 
@@ -77,7 +77,7 @@ class DB {
 
     async savePendingTrips(pt) {
 
-        if (pt.length === 0) return;
+        if (pt.length === 0) return false;
 
         const { pendingTrips } = this.collections,
             collection = await this.getCollection(pendingTrips);

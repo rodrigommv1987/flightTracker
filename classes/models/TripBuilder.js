@@ -31,7 +31,7 @@ class TripBuilder extends TripBase {
             airline.fetchAvailableAirports()
                 .then(airports => airports.find(airport => airport.iataCode == originAirport))
                 .then(originAirport => {
-                    console.log(originAirport);
+                    // console.log(originAirport);
                     // t.originAirport = originAirport;
                     // return r.fetchDestinations(originAirport);
                 });
@@ -45,16 +45,14 @@ class TripBuilder extends TripBase {
             const originAirport = await airline.findAirport(originAirportIata);
             const availableDestinations = await airline.fetchDestinations(originAirport);
 
-
             //for each available destination
-            for (const destinationAirport of availableDestinations.slice(0,5)) {
+            for (const destinationAirport of availableDestinations) {
                 const availableDates = (
                     await airline.fetchAvailableDates(originAirport, destinationAirport)
                 );
-
                 const trips = [];
                 //for each available date
-                for (const date of availableDates.slice(0,5)) {
+                for (const date of availableDates) {
                     trips.push(new Trip(
                         originAirport,
                         destinationAirport,

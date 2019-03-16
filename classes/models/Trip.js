@@ -53,8 +53,14 @@ class Trip {
         return this;
     }
 
-    fromJSON(){
-        
+    static fromJSON(trips = []) {
+
+        if (Array.isArray(trips)) {
+            return trips.map(({ originAirport, destinationAirport, departureDate, returnDate }) => new Trip(
+                originAirport, destinationAirport, departureDate, returnDate
+            ));
+        }
+        else return new Trip(trips.originAirport, trips.destinationAirport, trips.departureDate, trips.returnDate);
     }
 }
 
