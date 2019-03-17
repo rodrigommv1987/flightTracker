@@ -3,16 +3,15 @@ console.log('*******************************************************');
 console.log('*******************************************************');
 console.log('*******************************************************');
 // direct: !(airport.routes.findIndex(route => (route.includes(`connectingFlight:${iataCode}`))) !== -1)
-const { workers, actions, state } = require('./classes/models/Constants');
-const Ryanair = require('./classes/models/implementations/Ryanair');
-const Trip = require('./classes/models/Trip');
-const TripBuilder = require('./classes/models/TripBuilder');
-const TripResolver = require('./classes/models/TripResolver');
+const { workers, actions, state } = require('./src/models/Constants');
+const Ryanair = require('./src/models/implementations/Ryanair');
+const Trip = require('./src/models/Trip');
+const TripBuilder = require('./src/models/TripBuilder');
+const TripResolver = require('./src/models/TripResolver');
 const moment = require('moment');
-const db = require('./classes/models/DB');
+const db = require('./src/models/DB');
 const r = new Ryanair();
 const t = new Trip();
-
 
 // workAsync();
 async function workAsync() {
@@ -50,13 +49,30 @@ async function workAsync() {
 
 buildOneWayTrips()
 async function buildOneWayTrips() {
+	const tr = await new TripBuilder();
+	
+	console.log(typeof tr.getImplementations);
+	// console.log(Object.getOwnPropertyDescriptor(tr,tr.getImplementations));
+	
+	// console.log(Object.entries(tr));
+
+	// console.log(Object.getOwnPropertyDescriptors(tr));
+	// console.log(Object.getOwnPropertyNames(tr));
+	// console.log(Object.getPrototypeOf(tr));
+	// console.log(Object.keys(tr));
+	// console.log(tr.getImplementations);
+	return;
+
+
 	const origin = 'BCN';
-	const destination = 'BDS';
+	const destination = 'OPO';
 	const departure = '2019-03-18';
 	const returnDate = '2019-03-21';
 	const fs = require('fs');
 
 	const originAirport = await r.findAirport(origin);
+	console.log(originAirport);
+	return;
 	const destinationAirport = await r.findAirport(destination);
 	const availableDestinations = await r.fetchDestinations(destinationAirport);
 	const availableDates = await r.fetchAvailableDates(originAirport, destinationAirport);

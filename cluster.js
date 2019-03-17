@@ -1,8 +1,8 @@
 //require
 const cluster = require('cluster');
-const db = require('./classes/models/DB');
-const { workers, actions, state } = require('./classes/models/Constants');
-const { logSend, logReceive } = require('./classes/utils/Utils');
+const db = require('./src/models/DB');
+const { workers, actions, state } = require('./src/models/Constants');
+const { logSend, logReceive } = require('./src/utils/Utils');
 
 //const
 let tripBuilderWorker, tripResolverWorker;
@@ -23,11 +23,11 @@ else {
 
     switch (me) {
         case workers.tripBuilderWorker: {
-            require('./classes/workers/TripBuilderWorker');
+            require('./src/workers/TripBuilderWorker');
             break;
         }
         case workers.tripResolverWorker: {
-            require('./classes/workers/TripResolverWorker');
+            require('./src/workers/TripResolverWorker');
             break;
         }
     }
