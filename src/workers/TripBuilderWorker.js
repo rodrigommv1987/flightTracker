@@ -2,6 +2,7 @@
 const TripBuilder = require('../models/TripBuilder');
 const db = require('../models/DB');
 const { actions, state } = require('../models/Constants');
+const { logTripBuilderWorkerReceive, logTripBuilderWorkerSend, logTripBuilderWorkerMsg } = require('../utils/Utils');
 
 //const
 const { workerType: me } = process.env;
@@ -14,17 +15,17 @@ process.on("message", async (message) => {
 
         case actions.tripBuilderWorker.buildOneWayTrips.init: {
 
+            logTripBuilderWorkerReceive(actions.tripBuilderWorker.buildOneWayTrips.init);
             const tb = await new TripBuilder();
+            let count = 0;
 
             for await (const trips of tb.buildOneWayTrips(origin)) {
                 const success = await db.savePendingTrips(trips);
-                (success) ?
-                    console.log(`inserted ${trips.length} trips`)
-                    :
-                    console.log(`insert failed`)
-                    ;
-            }
 
+                if (success) count += trips.length;
+            }
+            logTripBuilderWorkerMsg(`Inserted ${count} trips.`);
+            logTripBuilderWorkerSend(actions.tripBuilderWorker.buildOneWayTrips.end);
             process.send({
                 from: me,
                 type: actions.tripBuilderWorker.buildOneWayTrips.end

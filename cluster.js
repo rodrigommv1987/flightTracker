@@ -1,11 +1,12 @@
 //require
 const cluster = require('cluster');
+const cron = require("node-cron");
 const db = require('./src/models/DB');
 const { workers, actions, state } = require('./src/models/Constants');
-const { logSend, logReceive } = require('./src/utils/Utils');
+const { logMasterSend, logMasterReceive } = require('./src/utils/Utils');
 
 //const
-let tripBuilderWorker, tripResolverWorker;
+let tripBuilderWorker, tripResolverWorker, tripBuilderWorkerInit = false, tripResolverWorkerInit = false;
 const { workerType: me } = process.env;
 
 
@@ -62,18 +63,22 @@ async function resolveTripBuilderMessage(message) {
 
     switch (message.type) {
         case state.tripBuilderWorker.ready: {
-            logSend(actions.tripBuilderWorker.buildOneWayTrips.init, workers.tripBuilderWorker);
-            tripBuilderWorker.send({
-                type: actions.tripBuilderWorker.buildOneWayTrips.init
-            });
+            console.log("init cron job: buildOneWayTrips");
+            cron.schedule("5 * * * * *", function () {
+                logMasterSend(actions.tripBuilderWorker.buildOneWayTrips.init, workers.tripBuilderWorker);
+                tripBuilderWorker.send({
+                    type: actions.tripBuilderWorker.buildOneWayTrips.init
+                });
+            }).start();
             break;
         }
         case actions.tripBuilderWorker.buildOneWayTrips.end: {
-            logReceive(actions.tripBuilderWorker.buildOneWayTrips.end, workers.tripBuilderWorker);
-            logSend(actions.tripResolverWorker.resolvePendingOneWayTrips.init, workers.tripResolverWorker);
-            tripResolverWorker.send({
-                type: actions.tripResolverWorker.resolvePendingOneWayTrips.init
-            });
+            logMasterReceive(actions.tripBuilderWorker.buildOneWayTrips.end, workers.tripBuilderWorker);
+            console.log('');
+            // logMasterSend(actions.tripResolverWorker.resolvePendingOneWayTrips.init, workers.tripResolverWorker);
+            // tripResolverWorker.send({
+            //     type: actions.tripResolverWorker.resolvePendingOneWayTrips.init
+            // });
             break;
         }
         default:
@@ -85,7 +90,7 @@ async function resolveTripResolverMessage(message) {
 
     switch (message.type) {
          case actions.tripResolverWorker.resolvePendingOneWayTrips.end: {
-            logReceive(actions.tripResolverWorker.resolvePendingOneWayTrips.end, workers.tripResolverWorker);
+            logMasterReceive(actions.tripResolverWorker.resolvePendingOneWayTrips.end, workers.tripResolverWorker);
             const allResolvedTrips = await db.selectAllResolvedTrip();
             console.table(allResolvedTrips);
             process.exit(0);

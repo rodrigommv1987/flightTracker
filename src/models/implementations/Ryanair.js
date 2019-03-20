@@ -31,6 +31,9 @@ class Ryanair {
     }
 
     findAirport(targetIataCode) {
+
+        if (typeof targetIataCode !== "string") return null;
+
         const { locale } = this.configs;
 
         return new Promise((resolve, reject) => {
@@ -51,7 +54,7 @@ class Ryanair {
                     }
 
                     const [{ name, cityCode, countryCode, iataCode }] = airports.filter(airport => (airport.iataCode === targetIataCode));
-                    
+
                     resolve(new Airport({
                         name, cityCode, countryCode, iataCode
                     }));
@@ -125,7 +128,10 @@ class Ryanair {
         });
     }
 
-    fetchAvailableDates({ iataCode: originIataCode }, { iataCode: destinationIataCode }) {
+    fetchAvailableDates({ iataCode: originIataCode = null }, { iataCode: destinationIataCode = null }) {
+
+        if ((originIataCode === null) && (destinationIataCode === null)) return null;
+
         const { fetchAvailableDates: { dateFormat } } = this.configs;
 
         return new Promise((resolve, reject) => {
@@ -142,12 +148,17 @@ class Ryanair {
                     `IsTwoWay=false&`,
                     `Months=17`,
                     `&StartDate=${moment(new Date()).format(dateFormat)}`
-                ].join('')                
+                ].join('')
             },
-                (error, response, {outboundDates, returnDates}) => {
+                (error, response, { outboundDates = null, returnDates }) => {
                     if (error) {
                         // console.log(`Error found in fetchAvailableDates`);
                         // console.log(error);
+                        return;
+                    }
+
+                    if (outboundDates === null) {
+                        resolve([]);
                         return;
                     }
 
